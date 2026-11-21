@@ -32,3 +32,39 @@ def LU1(A):
 MatriceA(20,1)
 A=MatriceA(20,1)
 LU1(A)
+
+
+def Etape1(t):
+    n = len(t)
+    F = []
+    # Initialisation (k = 1) : f_1 = (1 / t_0)
+    f1 = np.array([1.0 / t[0]], dtype=float)
+    F.append(f1)
+    # Boucle de récurrence pour k allant de 2 à n
+    for k in range(2, n + 1):
+        f_prev = F[-1]  # C'est le vecteur f_{k-1}
+        delta_k = np.dot(t[1:k], f_prev) # 1. Calcul de delta_k = sum_{m=1}^{k-1} t_m * (f_{k-1})_m . t[1:k] correspond à (t_1, ..., t_{k-1})
+        # Résolution du système 2x2 pour obtenir alpha_k et beta_k
+        beta_k = 1.0 / (1.0 - delta_k**2)
+        alpha_k = -delta_k * beta_k
+        # 3. Construction de f_k = alpha_k * [S_{k-1} f_{k-1} ; 0] + beta_k * [0 ; f_{k-1}]
+        v1 = np.append(f_prev[::-1], 0.0) # f_prev[::-1] réalise l'inversion d'indices S_{k-1} f_{k-1}
+        v2 = np.insert(f_prev, 0, 0.0)
+        f_k = alpha_k * v1 + beta_k * v2
+        F.append(f_k)   
+    return F
+
+def Etape2(t, b):
+    n = len(t)
+    # Appel de la première étape pour récupérer (f_1, ..., f_n)
+    F = Etape1(t)
+    # Initialisation (k = 1) : x_1 = (b_1 / t_0)
+    x = np.array([b[0] / t[0]], dtype=float)
+    # Boucle de récurrence pour k allant de 2 à n
+    for k in range(2, n + 1):
+        f_k = F[k - 1]
+        # Calcul de theta_k = b_k - sum_{j=1}^{k-1} t_{k-j} * (x_{k-1})_j
+        theta_k = b[k - 1] - np.dot(t[1:k][::-1], x)
+        # Mise à jour du point : x_k = [x_{k-1} ; 0] + theta_k * f_k
+        x = np.append(x, 0.0) + theta_k * f_k
+    return x
