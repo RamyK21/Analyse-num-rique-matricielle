@@ -3,6 +3,7 @@
 
 import numpy as np
 
+#Modélisation de la matrice A
 def MatriceA(n,tau):
     #Initialisation d'une matrice nulle de taille n x n
     A=np.zeros((n,n))
@@ -14,8 +15,7 @@ def MatriceA(n,tau):
             A[i,j]= 1.0/(1.0+(tau * np.abs(i-j))**2)
     return A
 
-
-MatriceA(3,1)
+#Décomposition LU de la matrice A
 def LU1(A):
     A=np.array(A, dtype=float)
     n=A.shape[0]
@@ -29,10 +29,44 @@ def LU1(A):
             L[i, k]=m
             U[i, k:]-=m*U[k, k:]        
     return L, U
-MatriceA(20,1)
-A=MatriceA(20,1)
-LU1(A)
 
+#Résolution du système Ly=pi
+def descente(A,b):
+    n=len(b)
+    x=np.zeros(n,dtype=float)
+    for i in range(0,n):
+        s=0
+        for j in range(0,i):
+            s+=A[i,j]*x[j]
+        x[i]=(b[i]-s)/(A[i,i])
+    return x
+
+
+#Résolution du système Ux=y
+
+def remontee(A,b):
+    n=len(b)
+    x=np.zeros(n,dtype=float)
+    for i in range(n-1,-1,-1): #on parcourt les lignes de la matrice, n-1 est la derniere ligne, on s arrete à la premiere ligne , indice 0
+        s=0
+        for j in range(i+1,n):
+            s+=A[i,j]*x[j]
+        x[i]=(b[i]-s)/(A[i,i])
+    return x
+
+#Résolution du probleme pi=Ax
+n=20
+tau=1.0
+A=MatriceA(n,tau)
+pi=np.ones(n,dtype=float)
+L,U=LU1(A)
+y=descente(L,pi)
+x=remontee(U,y)
+print ("La solution x du probleme (4) est:")
+print(x)
+
+
+    
 
 def Etape1(t):
     n = len(t)
